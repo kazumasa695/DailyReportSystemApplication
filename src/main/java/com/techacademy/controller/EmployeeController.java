@@ -74,6 +74,7 @@ public class EmployeeController {
          * 更新出来る仕様となっているため上記を考慮した場合に別でエラーメッセージを出す方法が簡単だと判断
          */
         if ("".equals(employee.getPassword())) {
+            model.addAttribute("employee", employee);
             // パスワードが空白だった場合
             model.addAttribute(ErrorMessage.getErrorName(ErrorKinds.BLANK_ERROR),
                     ErrorMessage.getErrorValue(ErrorKinds.BLANK_ERROR));
@@ -83,6 +84,11 @@ public class EmployeeController {
 
         // 入力チェック
         if (res.hasErrors()) {
+            model.addAttribute("employee", employee);
+            if (res.hasFieldErrors("name")) {
+                String message = res.getFieldError("name").getDefaultMessage();
+                model.addAttribute("nameError", message);
+            }
             return create(employee);
         }
 
@@ -114,27 +120,27 @@ public class EmployeeController {
             Model model,
             @AuthenticationPrincipal UserDetail userDetail) {
 
-        // 氏名の空白チェック（手動チェック）
         if ("".equals(employee.getName())) {
-            model.addAttribute("nameError", "値を入力してください");
-            return edit(code, model);
+            model.addAttribute("employee", employee);
+            model.addAttribute("nameError");
+            return "employees/edit";
         }
 
-        // 入力バリデーションエラー（@Size など）
         if (res.hasErrors()) {
             if (res.hasFieldErrors("name")) {
                 String message = res.getFieldError("name").getDefaultMessage();
-                model.addAttribute("nameError", message);
+                model.addAttribute("nameError");
             }
-            return edit(code, model);
+            model.addAttribute("employee", employee);
+            return "employees/edit";
         }
 
-        // サービス層の更新処理（ビジネスロジックエラー）
         ErrorKinds result = employeeService.update(employee);
 
         if (ErrorMessage.contains(result)) {
+            model.addAttribute("employee", employee);
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
-            return edit(code, model);
+            return "employees/edit";
         }
 
         return "redirect:/employees";
