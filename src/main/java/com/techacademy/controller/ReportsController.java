@@ -90,6 +90,16 @@ public class ReportsController {
         }
 
         report.setEmployee(userDetail.getEmployee());
+
+        boolean exists = reportsService.existsByEmployeeAndReportDateExcludingId(
+                report.getEmployee(), report.getReportDate(), id);
+
+            if (exists) {
+                res.rejectValue("reportDate", "duplicate-reportDate", "既に登録されている日付です");
+                model.addAttribute("report", report);
+                return "reports/edit";
+            }
+
         ErrorKinds result = reportsService.updateReport(report);
 
         if (ErrorMessage.contains(result)) {

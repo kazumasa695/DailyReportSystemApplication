@@ -147,4 +147,10 @@ public class ReportsService {
         return reportsRepository.findByEmployee(employee);
     }
 
+    public boolean existsByEmployeeAndReportDateExcludingId(Employee employee, LocalDate reportDate, Integer excludeId) {
+        Report existing = reportsRepository.findByEmployeeAndReportDate(employee, reportDate);
+        return existing != null && !existing.getId().equals(excludeId);
+    }
+
+
 }
