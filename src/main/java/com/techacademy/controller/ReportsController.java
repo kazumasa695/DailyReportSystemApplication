@@ -125,8 +125,6 @@ public class ReportsController {
 
         ErrorKinds result = reportsService.delete(id);
 
-
-
         if (ErrorMessage.contains(result)) {
             model.addAttribute(ErrorMessage.getErrorName(result), ErrorMessage.getErrorValue(result));
             model.addAttribute("report", reportsService.findById(id));
