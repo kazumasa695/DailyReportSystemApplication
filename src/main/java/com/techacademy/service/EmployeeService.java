@@ -6,11 +6,13 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.techacademy.constants.ErrorKinds;
 import com.techacademy.entity.Employee;
+import com.techacademy.entity.Report;
 import com.techacademy.repository.EmployeeRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,10 +21,13 @@ public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ReportsService reportService;
 
-    public EmployeeService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder) {
+    public EmployeeService(EmployeeRepository employeeRepository, PasswordEncoder passwordEncoder,
+            ReportsService reportService) {
         this.employeeRepository = employeeRepository;
         this.passwordEncoder = passwordEncoder;
+        this.reportService = reportService;
     }
 
     // 従業員保存
@@ -63,6 +68,11 @@ public class EmployeeService {
         employee.setUpdatedAt(now);
         employee.setDeleteFlg(true);
 
+        List<Report> reportList = reportService.findByEmployee(employee);
+
+        for (Report report : reportList) {
+            reportService.delete(report.getId());
+        }
         return ErrorKinds.SUCCESS;
     }
 
@@ -139,6 +149,15 @@ public class EmployeeService {
         // 桁数チェック
         int passwordLength = employee.getPassword().length();
         return passwordLength < 8 || 16 < passwordLength;
+    }
+
+ // 社員に紐づく日報一覧を取得
+    public List<Report> findByEmployee(Employee employee) {
+        return reportService.findByEmployee(employee);
+    }
+
+    public boolean existsByCode(String code) {
+        return employeeRepository.existsByCode(code);
     }
 
 }
